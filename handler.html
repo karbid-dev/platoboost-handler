@@ -1,0 +1,41 @@
+Step 1 – Platoboost
+-------------------
+User clicks “Get Key” → Platoboost generates one-time session:
+https://auth.platoboost.net/a?d=PLATO_SESSION
+Instead of going directly to LootLabs, Platoboost’s destination points to:
+https://yourdomain.com/handler.html?data=PLATO_SESSION
+
+        |
+        v
+Step 2 – Handler (first pass)
+-----------------------------
+- Handler receives ?data=PLATO_SESSION
+- Adds &return=1
+- Redirects user to LootLabs:
+  https://lootdest.org/s?67Nfrn6N&data=PLATO_SESSION&return=1
+
+        |
+        v
+Step 3 – LootLabs
+-----------------
+- User completes task OR attempts to bypass
+- LootLabs redirects back to the same handler:
+  https://yourdomain.com/handler.html?data=PLATO_SESSION&return=1
+
+        |
+        v
+Step 2 – Handler (second pass)
+-------------------------------
+- Handler checks the token:
+    - ✅ Valid / task completed → redirect back to Platoboost original link:
+      https://auth.platoboost.net/a?d=PLATO_SESSION
+      → Platoboost validates session and issues key
+    - ❌ Missing / invalid token → redirect to bypass URL:
+      https://google.com (or warning page)
+
+        |
+        v
+Step 4 – Final
+---------------
+- Legit user: receives key via Platoboost
+- Bypasser: sees bypass page / warning
