@@ -1,41 +1,42 @@
-Step 1 – Platoboost
--------------------
-User clicks “Get Key” → Platoboost generates one-time session:
-https://auth.platoboost.net/a?d=PLATO_SESSION
-Instead of going directly to LootLabs, Platoboost’s destination points to:
-https://yourdomain.com/handler.html?data=PLATO_SESSION
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Platoboost Redirect Handler</title>
+<script>
+window.onload = function() {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('data'); // Platoboost session token
 
-        |
-        v
-Step 2 – Handler (first pass)
------------------------------
-- Handler receives ?data=PLATO_SESSION
-- Adds &return=1
-- Redirects user to LootLabs:
-  https://lootdest.org/s?67Nfrn6N&data=PLATO_SESSION&return=1
+    // URLs
+    const lootLabsBase = 'https://lootdest.org/s?67Nfrn6N';
+    const platoboostCallback = 'https://auth.platoboost.net/callback'; // your actual callback
+    const bypassURL = 'https://google.com'; // fallback if bypass detected
 
-        |
-        v
-Step 3 – LootLabs
------------------
-- User completes task OR attempts to bypass
-- LootLabs redirects back to the same handler:
-  https://yourdomain.com/handler.html?data=PLATO_SESSION&return=1
+    // First pass: going to LootLabs
+    if (!params.get('return')) {
+        if (!token) {
+            // No token → redirect to bypass
+            window.location.href = bypassURL;
+            return;
+        }
+        // Redirect to LootLabs, preserving session token
+        window.location.href = lootLabsBase + '&data=' + encodeURIComponent(token) + '&return=1';
+        return;
+    }
 
-        |
-        v
-Step 2 – Handler (second pass)
--------------------------------
-- Handler checks the token:
-    - ✅ Valid / task completed → redirect back to Platoboost original link:
-      https://auth.platoboost.net/a?d=PLATO_SESSION
-      → Platoboost validates session and issues key
-    - ❌ Missing / invalid token → redirect to bypass URL:
-      https://google.com (or warning page)
-
-        |
-        v
-Step 4 – Final
----------------
-- Legit user: receives key via Platoboost
-- Bypasser: sees bypass page / warning
+    // Second pass: returning from LootLabs
+    if (token && token.length > 0) {
+        // Optional: add more validation of token if needed
+        window.location.href = platoboostCallback + '?data=' + encodeURIComponent(token);
+    } else {
+        // Invalid/missing token → bypass
+        window.location.href = bypassURL;
+    }
+};
+</script>
+</head>
+<body>
+Redirecting...
+</body>
+</html>
