@@ -1,42 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Platoboost Redirect Handler</title>
-<script>
-window.onload = function() {
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get('data'); // Platoboost session token
-
-    // URLs
-    const lootLabsBase = 'https://lootdest.org/s?67Nfrn6N';
-    const platoboostCallback = 'https://auth.platoboost.net/callback'; // your actual callback
-    const bypassURL = 'https://google.com'; // fallback if bypass detected
-
-    // First pass: going to LootLabs
-    if (!params.get('return')) {
-        if (!token) {
-            // No token → redirect to bypass
-            window.location.href = bypassURL;
-            return;
-        }
-        // Redirect to LootLabs, preserving session token
-        window.location.href = lootLabsBase + '&data=' + encodeURIComponent(token) + '&return=1';
-        return;
-    }
-
-    // Second pass: returning from LootLabs
-    if (token && token.length > 0) {
-        // Optional: add more validation of token if needed
-        window.location.href = platoboostCallback + '?data=' + encodeURIComponent(token);
-    } else {
-        // Invalid/missing token → bypass
-        window.location.href = bypassURL;
-    }
-};
-</script>
+  <meta charset="UTF-8">
+  <title>Platoboost Handler</title>
 </head>
 <body>
-Redirecting...
+<script>
+(function () {
+  let url = window.location.href;
+
+  // 🔧 if Platoboost sends &data= without a ?
+  if (url.includes("handler.html&")) {
+    let fixed = url.replace("handler.html&", "handler.html?");
+    window.location.replace(fixed);
+    return;
+  }
+
+  // Normal case (has ? already)
+  let params = new URLSearchParams(window.location.search);
+  let data = params.get("data");
+
+  if (data) {
+    console.log("✅ Platoboost data:", data);
+    // you can forward it back to your Lua client or display success here
+  } else {
+    console.warn("⚠️ No data found in URL");
+  }
+})();
+</script>
 </body>
 </html>
